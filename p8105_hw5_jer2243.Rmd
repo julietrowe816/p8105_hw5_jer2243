@@ -8,6 +8,33 @@ output: github_document
 ## Problem 2
 
 ```{r}
+library(tidyverse)
+library(rvest)
+```
 
+
+Importing and tidying the data
+```{r}
+names = list.files(path="data", full.names=TRUE)
+
+readin_csv = function(path) {
+  
+  df = 
+    read_csv(path) |>
+    janitor::clean_names() |>
+    mutate(
+      ident = path
+    ) |>
+    separate(ident, into=c("e", "arm", "e2", "id", "csv"), sep=c(5, 8, 9, 11)) |>
+  arrange(arm, id) |>
+  pivot_longer(week_1:week_8,
+               names_to = "week",
+               values_to = "value") |>
+  separate(week, into = c("w", "week_no"), sep="_") |>
+  select(-e, -e2, -csv, -w)
+}
+
+output = map(names, readin_csv) |>
+  bind_rows()
 ```
 
