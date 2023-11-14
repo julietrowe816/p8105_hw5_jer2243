@@ -38,3 +38,11 @@ output = map(names, readin_csv) |>
   bind_rows()
 ```
 
+Spaghetti plot of observations on each subject over time
+```{r}
+output |> 
+  mutate(week_no=as.numeric(week_no)) |>
+  ggplot(aes(x = week_no, y = value, color = id)) + geom_line() + facet_wrap(~arm)
+
+```
+
