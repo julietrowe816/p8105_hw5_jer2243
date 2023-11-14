@@ -5,10 +5,36 @@ date: "2023-11-06"
 output: github_document
 ---
 
+```{r setup, include=FALSE}
+library(tidyverse)
+library(p8105.datasets)
+library(viridis)
+library(purrr)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+```
+
+
+
 ## Problem 2
 
 ```{r}
-library(tidyverse)
 library(rvest)
 ```
 
@@ -52,8 +78,7 @@ Overall, the values in the experimental arm increased over the weeks while the v
 Generate datasets and save mu hat estimates and p-values
 ```{r}
 sim_mean_ttest = function(mu) {
-  
-  sim_data = tibble(
+  data = tibble(
     x = rnorm(n=30, mean = mu, sd = 5),
   )
 
@@ -64,9 +89,34 @@ output = data |>
   rename(mu_hat=estimate, pval=p.value)
 
 }
+
 ```
 
 Repeat the above for mu = 1, 2, 3, 4, 5, 6
+```{r}
+sim_results = expand_grid(
+  mu_df = c(0, 1, 2, 3, 4, 5, 6),
+  iter = 1:5000
+) |>
+  mutate(
+    estimate = map(mu_df, sim_mean_ttest)
+  ) |>
+  unnest(estimate)
+```
+
+Plot showing proportion of times the null was rejected on y axis and the true value of mu on x axis
+```{r}
+sim_results |>
+  group_by(mu_df) |>
+  summarize(
+    reject = sum(pval<0.05),
+    prop = reject/5000
+  ) |>
+  ggplot(aes(x=mu_df, y=prop)) + geom_line()
+```
+This plot shows an increasing trend, suggesting that as effect size increases, power also increases (power = the proportion of times the null was rejected).
+
+Plot showing average estimate of mu_hat on y axis and true value of mu on x axis. Overlay a plot of avg estimate of mu_hat only in samples for which the null was rejected on the y axis and true value of mu on x axis.
 ```{r}
 
 ```
